@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f2f5f2">
+  <title>0 to Shipped | Resume Parser</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #152a27;
+      --muted: #75827d;
+      --line: #dce4df;
+      --paper: #f2f5f2;
+      --white: #fbfcfa;
+      --green: #c7f36a;
+      --green-dark: #46652a;
+      --blue: #dce9f2;
+      --rose: #f3e5de;
+      --mono: "DM Mono", "Courier New", monospace;
+      --sans: "DM Sans", "Trebuchet MS", sans-serif;
+      --display: "Manrope", "Trebuchet MS", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      background-color: var(--paper);
+      background-image: linear-gradient(rgba(21, 42, 39, .035) 1px, transparent 1px), linear-gradient(90deg, rgba(21, 42, 39, .035) 1px, transparent 1px);
+      background-size: 32px 32px;
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, input { font: inherit; }
+    button { color: inherit; }
+
+    .shell { width: min(1120px, calc(100% - 64px)); margin: 0 auto; }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 78px;
+      border-bottom: 1px solid rgba(21, 42, 39, .14);
+    }
+
+    .brand { display: flex; align-items: center; gap: 11px; text-decoration: none; color: inherit; }
+    .brand-mark { display: grid; width: 31px; height: 31px; place-items: center; border-radius: 9px; background: var(--green); font-family: var(--display); font-size: 15px; font-weight: 800; }
+    .brand-name { font-family: var(--display); font-size: 14px; font-weight: 800; letter-spacing: 0; }
+    .brand-name span { color: #7d8b84; font-weight: 500; }
+    .top-note { display: flex; align-items: center; gap: 8px; color: #56645e; font-family: var(--mono); font-size: 11px; }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #6f9b3d; box-shadow: 0 0 0 3px rgba(111, 155, 61, .14); }
+
+    main { padding: 62px 0 72px; }
+    .intro { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 30px; animation: rise-in .55s ease both; }
+    .eyebrow { display: flex; align-items: center; gap: 9px; margin: 0 0 16px; color: #66746e; font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+    .eyebrow-line { width: 23px; height: 1px; background: #82918a; }
+    h1 { max-width: 600px; margin: 0; font-family: var(--display); font-size: clamp(36px, 5vw, 54px); font-weight: 600; line-height: 1.05; letter-spacing: 0; }
+    h1 em { color: #617b3e; font-style: normal; }
+    .intro-aside { max-width: 235px; margin: 0 0 5px; color: #66746e; font-size: 13px; line-height: 1.65; }
+
+    .workspace { display: grid; grid-template-columns: minmax(300px, .88fr) minmax(400px, 1.12fr); min-height: 490px; border: 1px solid #d6dfd9; border-radius: 6px; background: var(--white); box-shadow: 0 14px 38px rgba(29, 55, 45, .055); animation: rise-in .65s .08s ease both; }
+    .upload-panel { display: flex; flex-direction: column; padding: 30px; border-right: 1px solid var(--line); }
+    .section-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .section-label { margin: 0; font-family: var(--display); font-size: 15px; font-weight: 700; }
+    .step { color: #8a9690; font-family: var(--mono); font-size: 10px; }
+    .upload-copy { margin: 11px 0 24px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+
+    .drop-zone {
+      display: flex;
+      flex: 1;
+      min-height: 238px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 22px;
+      border: 1px dashed #aebdb3;
+      border-radius: 4px;
+      background: linear-gradient(145deg, #f8faf7, #f4f7f3);
+      text-align: center;
+      transition: border-color .18s ease, background .18s ease, transform .18s ease;
+    }
+    .drop-zone.is-over { transform: translateY(-2px); border-color: #709143; background: #f2f8e9; }
+    .upload-icon { display: grid; width: 45px; height: 45px; margin-bottom: 15px; place-items: center; border: 1px solid #d8e2d9; border-radius: 50%; background: #fff; color: #526c43; }
+    .upload-icon svg { width: 20px; height: 20px; }
+    .drop-title { margin: 0 0 6px; font-size: 13px; font-weight: 700; }
+    .drop-subtitle { margin: 0; color: var(--muted); font-size: 11px; }
+    .browse-button { display: inline-flex; min-height: 36px; align-items: center; justify-content: center; gap: 8px; margin-top: 17px; padding: 0 14px; border: 1px solid #cbd6ce; border-radius: 3px; background: #fff; cursor: pointer; font-size: 11px; font-weight: 700; transition: background .15s ease, border-color .15s ease; }
+    .browse-button:hover { border-color: #819b61; background: #f4f8ee; }
+    .browse-button:focus-visible, .clear-button:focus-visible { outline: 2px solid #698943; outline-offset: 3px; }
+    #resume-file { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); }
+    .file-limit { margin-top: 15px; color: #88948e; font-family: var(--mono); font-size: 9px; }
+
+    .selected-file { display: none; align-items: center; gap: 10px; width: 100%; margin-top: 20px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 3px; background: #fff; text-align: left; }
+    .selected-file.visible { display: flex; }
+    .file-symbol { display: grid; width: 30px; height: 34px; flex: 0 0 auto; place-items: center; border-radius: 3px; background: var(--rose); color: #8c5944; font-family: var(--mono); font-size: 9px; font-weight: 500; }
+    .file-detail { min-width: 0; flex: 1; }
+    .file-name { overflow: hidden; margin: 0 0 4px; font-size: 11px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+    .file-size { margin: 0; color: var(--muted); font-family: var(--mono); font-size: 9px; }
+    .file-check { color: #60833f; font-size: 14px; }
+    .error-message { display: none; margin: 12px 0 0; color: #a44937; font-size: 11px; line-height: 1.5; }
+    .error-message.visible { display: block; }
+    .privacy-note { display: flex; align-items: center; gap: 7px; margin: 22px 0 0; color: #7a8780; font-size: 10px; }
+    .privacy-note svg { width: 13px; height: 13px; flex: 0 0 auto; }
+
+    .report-panel { padding: 30px 32px 26px; }
+    .report-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .report-status { display: inline-flex; align-items: center; gap: 7px; padding: 6px 8px; border: 1px solid #e1e7e1; border-radius: 2px; color: #66746e; font-family: var(--mono); font-size: 9px; letter-spacing: .035em; }
+    .report-status .live-dot { width: 6px; height: 6px; }
+    .report-content { transition: opacity .2s ease; }
+    .report-content.is-loading { opacity: .45; }
+    .score-area { display: grid; grid-template-columns: 122px 1fr; align-items: center; gap: 23px; margin: 30px 0 25px; }
+    .score-ring { --score: 78; position: relative; display: grid; width: 122px; aspect-ratio: 1; place-items: center; border-radius: 50%; background: conic-gradient(#739347 calc(var(--score) * 1%), #e7ece6 0); }
+    .score-ring::before { position: absolute; width: 103px; aspect-ratio: 1; border-radius: 50%; background: var(--white); content: ""; }
+    .score-inner { position: relative; z-index: 1; text-align: center; }
+    .score-number { display: block; font-family: var(--display); font-size: 38px; font-weight: 700; line-height: 1; letter-spacing: 0; }
+    .score-outof { display: block; margin-top: 5px; color: var(--muted); font-family: var(--mono); font-size: 9px; }
+    .score-caption { margin: 0 0 6px; color: #76837c; font-family: var(--mono); font-size: 9px; letter-spacing: .07em; text-transform: uppercase; }
+    .score-verdict { margin: 0 0 7px; font-family: var(--display); font-size: 19px; font-weight: 700; line-height: 1.3; }
+    .score-description { max-width: 260px; margin: 0; color: #74817b; font-size: 11px; line-height: 1.55; }
+
+    .skills-header { display: flex; align-items: center; justify-content: space-between; margin: 0 0 12px; }
+    .skills-title { margin: 0; font-family: var(--display); font-size: 12px; font-weight: 700; }
+    .skills-count { color: #7d8983; font-family: var(--mono); font-size: 9px; }
+    .skill-group { padding: 14px 0; border-top: 1px solid #e7ece7; }
+    .skill-group-heading { display: flex; align-items: center; gap: 7px; margin: 0 0 10px; color: #596961; font-family: var(--mono); font-size: 9px; letter-spacing: .03em; }
+    .skill-marker { width: 6px; height: 6px; border-radius: 50%; }
+    .skill-marker.present { background: #72954a; }
+    .skill-marker.missing { background: #c88462; }
+    .skill-list { display: flex; flex-wrap: wrap; gap: 7px; }
+    .skill-chip { display: inline-flex; align-items: center; min-height: 25px; padding: 0 9px; border: 1px solid #e1e7e1; border-radius: 2px; background: #f8faf7; color: #46554d; font-size: 10px; }
+    .skill-chip.missing { border-color: #ebddd6; background: #fcf8f5; color: #886b5f; }
+    .report-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 3px; padding-top: 14px; border-top: 1px solid #e7ece7; color: #909b95; font-family: var(--mono); font-size: 9px; }
+    .clear-button { padding: 4px 0 4px 8px; border: 0; background: transparent; color: #566b48; cursor: pointer; font-family: var(--sans); font-size: 10px; font-weight: 700; }
+
+    .page-foot { display: flex; justify-content: space-between; gap: 16px; padding: 18px 2px 0; color: #7d8983; font-family: var(--mono); font-size: 9px; }
+    .page-foot span:last-child { text-align: right; }
+    @keyframes rise-in { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 760px) {
+      .shell { width: min(100% - 36px, 540px); }
+      main { padding: 40px 0 44px; }
+      .intro { align-items: start; flex-direction: column; gap: 14px; margin-bottom: 23px; }
+      .eyebrow { margin-bottom: 12px; }
+      h1 { max-width: 470px; font-size: clamp(36px, 10vw, 48px); }
+      .intro-aside { max-width: 370px; margin: 0; }
+      .workspace { grid-template-columns: 1fr; }
+      .upload-panel { min-height: 390px; border-right: 0; border-bottom: 1px solid var(--line); }
+      .drop-zone { min-height: 205px; }
+      .report-panel { padding: 25px 24px 22px; }
+      .page-foot { flex-direction: column; gap: 7px; }
+      .page-foot span:last-child { text-align: left; }
+    }
+
+    @media (max-width: 420px) {
+      .shell { width: calc(100% - 28px); }
+      .topbar { height: 66px; }
+      .top-note { font-size: 9px; }
+      .upload-panel { padding: 22px; }
+      .report-panel { padding-right: 20px; padding-left: 20px; }
+      .score-area { grid-template-columns: 104px 1fr; gap: 16px; margin: 25px 0 21px; }
+      .score-ring { width: 104px; }
+      .score-ring::before { width: 88px; }
+      .score-number { font-size: 34px; }
+      .score-verdict { font-size: 17px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="0 to Shipped home">
+        <span class="brand-mark">0›</span>
+        <span class="brand-name">0 TO SHIPPED <span>/ RESUME PARSER</span></span>
+      </a>
+      <div class="top-note"><span class="live-dot" aria-hidden="true"></span> FRONT-END DEMO</div>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span> THE FIRST STEP TO YOUR NEXT ROLE</p>
+          <h1 id="page-title">Make your next move<br><em>with a little more clarity.</em></h1>
+        </div>
+        <p class="intro-aside">A quick read on your resume: what’s working, what’s missing, and where to focus next.</p>
+      </section>
+
+      <section class="workspace" aria-label="Resume scoring tool">
+        <div class="upload-panel">
+          <div class="section-top">
+            <h2 class="section-label">Your resume</h2>
+            <span class="step">01 / UPLOAD</span>
+          </div>
+          <p class="upload-copy">Bring your latest PDF. We’ll give you a quick, mock skills check.</p>
+
+          <div class="drop-zone" id="drop-zone">
+            <div class="upload-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5"/><path d="M5 14v4.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V14"/></svg>
+            </div>
+            <p class="drop-title">Drop your resume here</p>
+            <p class="drop-subtitle">or choose a file from your device</p>
+            <label class="browse-button" for="resume-file">Browse PDF <span aria-hidden="true">↗</span></label>
+            <input id="resume-file" type="file" accept="application/pdf,.pdf" aria-label="Choose a PDF resume">
+            <span class="file-limit">PDF ONLY · UP TO 10 MB</span>
+          </div>
+
+          <div class="selected-file" id="selected-file" aria-live="polite">
+            <span class="file-symbol" aria-hidden="true">PDF</span>
+            <div class="file-detail"><p class="file-name" id="file-name"></p><p class="file-size" id="file-size"></p></div>
+            <span class="file-check" aria-label="Ready">&#10003;</span>
+          </div>
+          <p class="error-message" id="error-message" role="alert"></p>
+          <p class="privacy-note">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="4" y="8" width="12" height="9" rx="1.5"/><path d="M7 8V5.5a3 3 0 0 1 6 0V8m-3 4v2"/></svg>
+            Demo only. Your file stays in this browser.
+          </p>
+        </div>
+
+        <div class="report-panel" aria-label="Resume score report">
+          <div class="report-heading">
+            <h2 class="section-label">Resume snapshot</h2>
+            <span class="report-status"><span class="live-dot" aria-hidden="true"></span><span id="report-status">SAMPLE REPORT</span></span>
+          </div>
+
+          <div class="report-content" id="report-content" aria-live="polite">
+            <div class="score-area">
+              <div class="score-ring" id="score-ring" role="img" aria-label="Resume score: 78 out of 100">
+                <div class="score-inner"><span class="score-number" id="score-number">78</span><span class="score-outof">/ 100</span></div>
+              </div>
+              <div>
+                <p class="score-caption">YOUR RESUME SCORE</p>
+                <p class="score-verdict" id="score-verdict">A solid start.</p>
+                <p class="score-description" id="score-description">Good foundations are here. A few in-demand skills could make your profile even stronger.</p>
+              </div>
+            </div>
+
+            <div class="skills-header">
+              <h3 class="skills-title">Skills check</h3>
+              <span class="skills-count" id="skills-count">5 FOUND · 3 TO ADD</span>
+            </div>
+
+            <div class="skill-group">
+              <p class="skill-group-heading"><span class="skill-marker present" aria-hidden="true"></span> PRESENT IN YOUR RESUME</p>
+              <div class="skill-list" id="present-skills"><span class="skill-chip">React</span><span class="skill-chip">TypeScript</span><span class="skill-chip">REST APIs</span><span class="skill-chip">Accessibility</span><span class="skill-chip">Git</span></div>
+            </div>
+
+            <div class="skill-group">
+              <p class="skill-group-heading"><span class="skill-marker missing" aria-hidden="true"></span> NOT SPOTTED THIS TIME</p>
+              <div class="skill-list" id="missing-skills"><span class="skill-chip missing">Next.js</span><span class="skill-chip missing">Testing</span><span class="skill-chip missing">CI/CD</span></div>
+            </div>
+
+            <div class="report-footer">
+              <span id="report-file-label">EXAMPLE FRONTEND RESUME</span>
+              <button class="clear-button" id="clear-button" type="button" hidden>Clear file</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="page-foot"><span>0 TO SHIPPED · YOUR CAREER, IN PROGRESS</span><span>MOCK RESULTS · NOT A REAL RESUME ANALYSIS</span></footer>
+    </main>
+  </div>
+
+  <script>
+    const fileInput = document.querySelector("#resume-file");
+    const dropZone = document.querySelector("#drop-zone");
+    const selectedFile = document.querySelector("#selected-file");
+    const errorMessage = document.querySelector("#error-message");
+    const reportContent = document.querySelector("#report-content");
+    const clearButton = document.querySelector("#clear-button");
+    const maxFileSize = 10 * 1024 * 1024;
+
+    function formatFileSize(bytes) {
+      return bytes < 1024 * 1024
+        ? `${Math.max(1, Math.round(bytes / 1024))} KB`
+        : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    }
+
+    function displayError(message) {
+      errorMessage.textContent = message;
+      errorMessage.classList.add("visible");
+    }
+
+    function setFile(file) {
+      errorMessage.classList.remove("visible");
+      if (!file) return;
+
+      if (!file.name.toLowerCase().endsWith(".pdf") || (file.type && file.type !== "application/pdf")) {
+        displayError("That file doesn’t look like a PDF. Please choose a .pdf file.");
+        fileInput.value = "";
+        return;
+      }
+      if (file.size > maxFileSize) {
+        displayError("This file is over 10 MB. Choose a smaller PDF to continue.");
+        fileInput.value = "";
+        return;
+      }
+
+      document.querySelector("#file-name").textContent = file.name;
+      document.querySelector("#file-size").textContent = `${formatFileSize(file.size)} · READY TO SCAN`;
+      document.querySelector("#report-file-label").textContent = file.name.toUpperCase();
+      document.querySelector("#report-status").textContent = "SCANNED · MOCK";
+      selectedFile.classList.add("visible");
+      clearButton.hidden = false;
+
+      reportContent.classList.add("is-loading");
+      window.setTimeout(() => reportContent.classList.remove("is-loading"), 500);
+    }
+
+    fileInput.addEventListener("change", (event) => setFile(event.target.files[0]));
+
+    ["dragenter", "dragover"].forEach((eventName) => {
+      dropZone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        dropZone.classList.add("is-over");
+      });
+    });
+
+    ["dragleave", "drop"].forEach((eventName) => {
+      dropZone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        dropZone.classList.remove("is-over");
+      });
+    });
+
+    dropZone.addEventListener("drop", (event) => setFile(event.dataTransfer.files[0]));
+
+    clearButton.addEventListener("click", () => {
+      fileInput.value = "";
+      selectedFile.classList.remove("visible");
+      clearButton.hidden = true;
+      document.querySelector("#report-file-label").textContent = "EXAMPLE FRONTEND RESUME";
+      document.querySelector("#report-status").textContent = "SAMPLE REPORT";
+      errorMessage.classList.remove("visible");
+    });
+  </script>
+</body>
+</html>
